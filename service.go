@@ -153,10 +153,10 @@ func (s *service) Stop() error {
 func (s *service) Run() error {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL)
-	return s.RunUntilSignal(ch)
+	return s.runUntilSignal(ch)
 }
 
-func (s *service) RunUntilSignal(ch chan os.Signal) error {
+func (s *service) runUntilSignal(ch chan os.Signal) error {
 	if err := s.Start(); err != nil {
 		return err
 	}
