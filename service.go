@@ -157,8 +157,30 @@ func (s *service) Run() error {
 }
 
 func (s *service) runUntilSignal(ch chan os.Signal) error {
+	var err error
+	exit := make(chan bool)
+	result := make(chan error)
+
+	go s.runUntilChannelClose(exit, result)
+
+	select {
+	// wait on kill signal
+	case <-ch:
+	// wait on context cancel
+	case <-s.opts.Context.Done():
+	// wait on error
+	case errorResult := <-result:
+		err = errorResult
+	}
+
+	close(exit)
+	return err
+}
+
+func (s *service) runUntilChannelClose(ch chan bool, resultError chan error) {
 	if err := s.Start(); err != nil {
-		return err
+		resultError <- err
+		return
 	}
 
 	// start reg loop
@@ -168,16 +190,15 @@ func (s *service) runUntilSignal(ch chan os.Signal) error {
 	select {
 	// wait on kill signal
 	case <-ch:
-	// wait on context cancel
-	case <-s.opts.Context.Done():
 	}
 
 	// exit reg loop
 	close(ex)
 
 	if err := s.Stop(); err != nil {
-		return err
+		resultError <- err
+		return
 	}
 
-	return nil
+	return
 }
