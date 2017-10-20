@@ -19,6 +19,7 @@ type Service interface {
 	Client() client.Client
 	Server() server.Server
 	Run() error
+	RunUntilChannelClose(chan bool, chan error)
 	String() string
 }
 

@@ -161,7 +161,7 @@ func (s *service) runUntilSignal(ch chan os.Signal) error {
 	exit := make(chan bool)
 	result := make(chan error)
 
-	go s.runUntilChannelClose(exit, result)
+	go s.RunUntilChannelClose(exit, result)
 
 	select {
 	// wait on kill signal
@@ -175,7 +175,7 @@ func (s *service) runUntilSignal(ch chan os.Signal) error {
 	return err
 }
 
-func (s *service) runUntilChannelClose(exit chan bool, errChan chan error) {
+func (s *service) RunUntilChannelClose(exit chan bool, errChan chan error) {
 	if err := s.Start(); err != nil {
 		errChan <- err
 		return
