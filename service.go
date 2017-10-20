@@ -151,6 +151,12 @@ func (s *service) Stop() error {
 }
 
 func (s *service) Run() error {
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL)
+	return s.RunUntilSignal(ch)
+}
+
+func (s *service) RunUntilSignal(ch chan os.Signal) error {
 	if err := s.Start(); err != nil {
 		return err
 	}
@@ -158,9 +164,6 @@ func (s *service) Run() error {
 	// start reg loop
 	ex := make(chan bool)
 	go s.run(ex)
-
-	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL)
 
 	select {
 	// wait on kill signal
